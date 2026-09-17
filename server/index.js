@@ -63,19 +63,21 @@ const geocode = async address => {
     return point;
   } catch (error) { console.error('Address geocoding failed:', error.message); return null; }
 };
-const routedDistanceKm = async (from, to) => {
+const routedTrip = async (from, to) => {
   const [start, end] = await Promise.all([geocode(from), geocode(to)]);
-  if (!start || !end) return distanceKm(from, to);
+  if (!start || !end) { const distance = distanceKm(from, to); return { distance, minutes: Math.max(10, Math.round(distance * 3.5)) }; }
   try {
     const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${start.lng},${start.lat};${end.lng},${end.lat}?overview=false`);
-    if (!response.ok) return distanceKm(from, to);
+    if (!response.ok) { const distance = distanceKm(from, to); return { distance, minutes: Math.max(10, Math.round(distance * 3.5)) }; }
     const data = await response.json();
-    return Number.isFinite(data.routes?.[0]?.distance) ? Math.max(1, Math.round(data.routes[0].distance / 100) / 10) : distanceKm(from, to);
-  } catch (error) { console.error('Route distance lookup failed:', error.message); return distanceKm(from, to); }
+    const route = data.routes?.[0];
+    if (!route || !Number.isFinite(route.distance)) { const distance = distanceKm(from, to); return { distance, minutes: Math.max(10, Math.round(distance * 3.5)) }; }
+    return { distance: Math.max(1, Math.round(route.distance / 100) / 10), minutes: Math.max(10, Math.round((route.duration || 0) / 60)) };
+  } catch (error) { console.error('Route distance lookup failed:', error.message); const distance = distanceKm(from, to); return { distance, minutes: Math.max(10, Math.round(distance * 3.5)) }; }
 };
-const makeQuote = (input, distance) => { const vehicle=String(input.vehicleType||'MOTORCYCLE').toUpperCase(), priority=String(input.priority||'STANDARD').toUpperCase(); const vehicleMultiplier=vehicle==='CAR'?1.35:vehicle==='VAN'?1.6:1; const priorityMultiplier=priority==='EXPRESS'?1.25:1; const total=Math.ceil((800+distance*180)*vehicleMultiplier*priorityMultiplier/50)*50; const platformFee=Math.round(total*0.1); return { distanceKm: distance, vehicleType: vehicle, estimatedMinutes: Math.max(10,Math.round(distance*3.5)), total, platformFee, riderEarning: total-platformFee, currency:'NGN' }; };
-const quote = input => makeQuote(input, distanceKm(input.pickup, input.destination));
-const quoteAsync = async input => makeQuote(input, await routedDistanceKm(input.pickup, input.destination));
+const makeQuote = (input, trip) => { const vehicle=String(input.vehicleType||'MOTORCYCLE').toUpperCase(), priority=String(input.priority||'STANDARD').toUpperCase(); const vehicleMultiplier=vehicle==='CAR'?1.35:vehicle==='VAN'?1.6:1; const priorityMultiplier=priority==='EXPRESS'?1.25:1; const baseFare=1500, distanceCharge=trip.distance*300, timeCharge=trip.minutes*120; const total=Math.ceil((baseFare+distanceCharge+timeCharge)*vehicleMultiplier*priorityMultiplier/50)*50; const platformFee=Math.round(total*0.1); return { distanceKm: trip.distance, vehicleType: vehicle, estimatedMinutes: trip.minutes, total, platformFee, riderEarning: total-platformFee, currency:'NGN' }; };
+const quote = input => { const distance = distanceKm(input.pickup, input.destination); return makeQuote(input, { distance, minutes: Math.max(10, Math.round(distance * 3.5)) }); };
+const quoteAsync = async input => makeQuote(input, await routedTrip(input.pickup, input.destination));
 const wallet = ownerId => { db.wallets ||= { accounts:{}, transactions:[] }; db.wallets.accounts ||= {}; if (!Array.isArray(db.wallets.transactions)) db.wallets.transactions=[]; db.wallets.accounts[ownerId] ||= { balance:0, payoutAccount:null, transactions:[] }; const account=db.wallets.accounts[ownerId]; if (!Number.isFinite(Number(account.balance))) account.balance=0; if (!Array.isArray(account.transactions)) account.transactions=[]; if (!Object.prototype.hasOwnProperty.call(account,'payoutAccount')) account.payoutAccount=null; return account; };
 const adminWalletId = () => db.users.find(item => item.role === 'ADMIN')?.id || 'ADMIN';
 const credit = (ownerId, amount, type, description, meta={}) => { const account=wallet(ownerId); account.balance=Math.round((account.balance+amount)*100)/100; const tx={id:'txn-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),ownerId,amount,type,description,at:new Date().toISOString(),...meta}; account.transactions.unshift(tx); db.wallets.transactions.unshift(tx); return account; };
