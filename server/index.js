@@ -131,6 +131,19 @@ const ensureMockDrivers = () => {
     if (!db.drivers.some(item => item.id === id)) db.drivers.push({ id, name, phone: '', vehicle, status: 'AVAILABLE', lat, lng, capacity });
   });
 };
+const ensureRiderProfiles = () => {
+  db.drivers ||= [];
+  db.users.filter(user => user.role === 'RIDER').forEach(user => {
+    const driverId = user.driverId || user.driver_id;
+    let rider = db.drivers.find(item => item.id === driverId || item.userId === user.id || item.user_id === user.id || item.name === user.name || item.email === user.email);
+    if (!rider) {
+      rider = { id: driverId || `d-${user.id}`, userId: user.id, name: user.name, email: user.email, phone: user.phone || '', vehicle: user.vehicle || 'Vehicle details pending', status: 'AVAILABLE', lat: 9.0765, lng: 7.3986, capacity: 2 };
+      db.drivers.push(rider);
+    }
+    user.driverId = rider.id;
+    rider.userId ||= user.id;
+  });
+};
 const stages = [
   { status: 'LOOKING_FOR_RIDER', label: 'Looking for a rider', start: 0, end: 4 },
   { status: 'RIDER_ACCEPTED', label: 'Rider has accepted your order', start: 4, end: 8 },
@@ -138,7 +151,7 @@ const stages = [
   { status: 'HEADED_TO_DELIVERY', label: 'Rider is headed to delivery', start: 12, end: 16 },
   { status: 'DELIVERED', label: 'Completed', start: 16, end: 20 }
 ];
-const riderFor = user => db.drivers.find(item => item.id === user.driverId) || db.drivers.find(item => item.name === user.name);
+const riderFor = user => db.drivers.find(item => item.id === (user.driverId || user.driver_id)) || db.drivers.find(item => item.userId === user.id || item.user_id === user.id || item.email === user.email || item.name === user.name);
 const activeFor = driver => db.deliveries.filter(item => item.driverId === driver.id && item.status !== 'DELIVERED');
 const syncRiderStatuses = () => { let changed = false; db.drivers.forEach(driver => { const active = activeFor(driver); const next = active.length ? 'ON_DELIVERY' : 'AVAILABLE'; if (driver.status !== next) { driver.status = next; changed = true; } }); return changed; };
 const chooseRider = delivery => {
@@ -227,6 +240,6 @@ app.get('/api/analytics/overview', auth(['ADMIN', 'DISPATCHER']), (req, res) => 
 app.get('/api/activity', auth(['ADMIN', 'DISPATCHER']), (req, res) => res.json(db.logs));
 app.use(express.static(path.join(__dirname, '..', 'dist')));
 app.use((req, res) => res.sendFile(path.join(__dirname, '..', 'dist', 'index.html')));
-const ready = load().then(async () => { ensureMockDrivers(); ensureAdmin(); settleExistingFees(); await save(); });
+const ready = load().then(async () => { ensureMockDrivers(); ensureRiderProfiles(); ensureAdmin(); settleExistingFees(); await save(); });
 if (require.main === module) ready.then(() => app.listen(process.env.PORT || 3001, '127.0.0.1', () => console.log(`RouteFlow Express API on ${process.env.PORT || 3001} · ${supabase ? 'Supabase connected' : 'local fallback'}`))).catch(error => { console.error('Could not load Supabase state:', error.message); process.exit(1); });
 module.exports = async (req, res) => { try { await ready; return app(req, res); } catch (error) { console.error('Could not initialize RouteFlow API:', error.message); return res.status(500).json({ error: 'API initialization failed' }); } };
