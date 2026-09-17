@@ -1,0 +1,10 @@
+.simulation{display:none}
+.workspace-note{color:var(--muted);font-size:11px;padding:12px 5px 20px}
+.map-label{font-size:0}
+.map-label::before{content:'Abuja map · live data';font-size:9px}
+.map-marker{position:absolute;z-index:2;font-size:22px;text-align:center;transform:translate(-50%,-50%);text-shadow:0 1px 2px #fff}
+.map-marker small{display:block;background:#fff;padding:3px 5px;border-radius:4px;color:#53645f;font-size:9px;white-space:nowrap;box-shadow:0 2px 6px #bfcfc8;text-shadow:none}
+.pickup-marker{color:#e07843}.destination-marker{color:#547dd6}.rider-marker{color:var(--teal)}.map-empty{display:grid;place-items:center;height:100%;color:var(--muted);font-size:12px}
+.status.looking_for_rider{color:#9a6a22;background:#fff5dd}.status.rider_accepted{color:#5673b4;background:#eaf0ff}.status.headed_to_pickup{color:#c66a2c;background:#fff0e6}.status.headed_to_delivery{color:#25766f;background:#e5f7f0}
+.map-route{display:flex;gap:8px;align-items:center;position:relative;z-index:2;padding:8px 12px;background:#ffffffd9;border-radius:7px;margin:8px;font-size:10px}.map-route b:first-child{color:#e07843}.map-route b{color:#547dd6}.map-route i{color:var(--teal);font-style:normal}.map-rider{position:absolute;right:12px;bottom:12px;z-index:3;background:#fff;padding:6px 8px;border-radius:6px;color:var(--teal);font-size:10px;box-shadow:0 2px 6px #bfcfc8}
+.rider-order{justify-content:space-between;align-items:center}.rider-order h2{margin:7px 0;font-size:18px}.rider-order h2 span{color:var(--teal);padding:0 7px}.rider-order .progress{margin-top:12px;min-width:240px}.driver-card .profile-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}.driver-card .profile-header h3{margin:0 0 7px}.driver-card small{display:block;color:var(--muted);margin-top:8px}
