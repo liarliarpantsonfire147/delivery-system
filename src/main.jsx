@@ -466,6 +466,14 @@ function Detail({ user, db, id }) {
     api(`/deliveries/${d.id}/pay`, { method: "POST" })
       .then(() => location.reload())
       .catch((e) => alert(e.error));
+  const accept = () =>
+    api(`/deliveries/${d.id}/accept`, { method: "POST" })
+      .then(() => location.reload())
+      .catch((e) => alert(e.error || "Could not accept this ride"));
+  const reject = () =>
+    api(`/deliveries/${d.id}/reject`, { method: "POST" })
+      .then(() => go("/rider/orders"))
+      .catch((e) => alert(e.error || "Could not decline this ride"));
   return (
     <section className="panel full">
       <button
@@ -517,6 +525,19 @@ function Detail({ user, db, id }) {
         ))}
       </div>
       <div className="modal-actions">
+        {user.role === "RIDER" &&
+          !d.driverId &&
+          d.paymentStatus === "PAID" &&
+          d.status === "LOOKING_FOR_RIDER" && (
+            <>
+              <button className="primary" onClick={accept}>
+                Accept ride
+              </button>
+              <button className="outline" onClick={reject}>
+                Decline ride
+              </button>
+            </>
+          )}
         {d.paymentStatus === "UNPAID" &&
           ["CUSTOMER", "BUSINESS", "ADMIN"].includes(user.role) && (
             <button className="primary" onClick={pay}>
@@ -783,7 +804,8 @@ function RiderHistory({ user, db }) {
 }
 function RiderDirectory({ db, title = "Riders" }) {
   const riders = Array.isArray(db.drivers) ? db.drivers : [], available = riders.filter((r) => r.status === "AVAILABLE").length;
-  return <section className="panel full"><div className="panel-head"><div><span className="eyebrow">DISPATCH DIRECTORY</span><h1>{title}</h1><p className="muted">Every rider currently registered in RouteFlow.</p></div><span className="pill green-pill">{available} available · {riders.length} total</span></div>{riders.length ? <div className="driver-grid">{riders.map((d) => <div className="driver-card" key={d.id}><div className="profile-header"><div className="avatar large">{d.name?.[0] || "R"}</div><div><h3>{d.name}</h3><span className={'status '+String(d.status || 'AVAILABLE').toLowerCase()}>{String(d.status || 'AVAILABLE').replace('_',' ')}</span></div></div><p>{d.vehicle || 'Vehicle details pending'}</p><small>{d.vehicleType || 'MOTORCYCLE'} · capacity {d.capacity || 2}</small></div>)}</div> : <div className="empty">No riders are registered yet.</div>}</section>;
+  const vehicleType = (rider) => rider.vehicleType || (/\bvan\b/i.test(rider.vehicle || "") ? "VAN" : /\bcar\b/i.test(rider.vehicle || "") ? "CAR" : "MOTORCYCLE");
+  return <section className="panel full"><div className="panel-head"><div><span className="eyebrow">DISPATCH DIRECTORY</span><h1>{title}</h1><p className="muted">Every rider currently registered in RouteFlow.</p></div><span className="pill green-pill">{available} available · {riders.length} total</span></div>{riders.length ? <div className="driver-grid">{riders.map((d) => <div className="driver-card" key={d.id}><div className="profile-header"><div className="avatar large">{d.name?.[0] || "R"}</div><div><h3>{d.name}</h3><span className={'status '+String(d.status || 'AVAILABLE').toLowerCase()}>{String(d.status || 'AVAILABLE').replace('_',' ')}</span></div></div><p>{d.vehicle || 'Vehicle details pending'}</p><small>{vehicleType(d)} · capacity {d.capacity || 2}</small></div>)}</div> : <div className="empty">No riders are registered yet.</div>}</section>;
 }
 function UserDirectory({ db }) {
   const users = Array.isArray(db.users) ? db.users : [];
