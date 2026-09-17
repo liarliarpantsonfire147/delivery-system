@@ -319,7 +319,8 @@ function Deliveries({ user, db, newOrder = false }) {
       priority: "STANDARD",
     }),
     [quote, setQuote] = useState(null),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [submitting, setSubmitting] = useState(false);
   useEffect(() => {
     if (f.pickup && f.destination)
       api(
@@ -329,15 +330,17 @@ function Deliveries({ user, db, newOrder = false }) {
         .catch(() => setQuote(null));
     else setQuote(null);
   }, [f.pickup, f.destination, f.vehicleType, f.priority]);
-  const create = () =>
+  const create = () => {
+    if (submitting) return;
+    setSubmitting(true);
+    setError("");
     api("/deliveries", { method: "POST", body: JSON.stringify(f) })
-      .then(() =>
-        go(
-          menus[user.role].find((x) => x[0] === "Deliveries")?.[1] ||
-            back(user.role),
-        ),
-      )
-      .catch((e) => setError(e.error || "Could not create delivery"));
+      .then(() => go(`/${user.role.toLowerCase()}/deliveries`))
+      .catch((e) => {
+        setSubmitting(false);
+        setError(e.error || "Could not create delivery");
+      });
+  };
   return (
     <section className="panel full">
       <div className="panel-head">
@@ -400,8 +403,8 @@ function Deliveries({ user, db, newOrder = false }) {
             </div>
           )}
           {error && <div className="error">{error}</div>}
-          <button className="primary" onClick={create}>
-            Submit request
+          <button className="primary" onClick={create} disabled={submitting}>
+            {submitting ? "Submitting..." : "Submit request"}
           </button>
         </div>
       )}
@@ -761,7 +764,7 @@ function RiderOrders() {
   }, []);
   const accept = (id) =>
     api(`/deliveries/${id}/accept`, { method: "POST" })
-      .then(() => load())
+      .then(() => go("/rider/active"))
       .catch((e) => setError(e.error || "Could not accept this ride"));
   const reject = (id) =>
     api(`/deliveries/${id}/reject`, { method: "POST" })

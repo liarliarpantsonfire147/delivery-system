@@ -130,8 +130,12 @@ const ensureMockDrivers = () => {
     ['driver-24', 'Seun Lawal', 'Car · Toyota Yaris', 9.043, 7.382, 3],
   ];
   vehicles.forEach(([id, name, vehicle, lat, lng, capacity]) => {
-    if (!db.drivers.some(item => item.id === id)) db.drivers.push({ id, name, phone: '', vehicle, status: 'AVAILABLE', lat, lng, capacity });
+    const existing = db.drivers.find(item => item.id === id);
+    if (existing) existing.automated = true;
+    else db.drivers.push({ id, name, phone: '', vehicle, status: 'AVAILABLE', lat, lng, capacity, automated: true });
   });
+  const legacyMock = db.drivers.find(item => item.id === 'd3');
+  if (legacyMock) legacyMock.automated = true;
 };
 const ensureRiderProfiles = () => {
   db.drivers ||= [];
@@ -158,7 +162,7 @@ const activeFor = driver => db.deliveries.filter(item => item.driverId === drive
 const syncRiderStatuses = () => { let changed = false; db.drivers.forEach(driver => { const active = activeFor(driver); const next = active.length ? 'ON_DELIVERY' : 'AVAILABLE'; if (driver.status !== next) { driver.status = next; changed = true; } }); return changed; };
 const chooseRider = delivery => {
   syncRiderStatuses();
-  const available = db.drivers.filter(item => item.status === 'AVAILABLE' || activeFor(item).some(current => (current.progress || 0) >= 95));
+  const available = db.drivers.filter(item => item.automated && (item.status === 'AVAILABLE' || activeFor(item).some(current => (current.progress || 0) >= 95)));
   if (!available.length) { delivery.riderNotice = 'Rider will be assigned once a rider is free'; return null; }
   const selected = available[Math.floor(Math.random() * available.length)];
   selected.status = 'ON_DELIVERY';
