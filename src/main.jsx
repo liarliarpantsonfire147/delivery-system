@@ -64,7 +64,15 @@ const go = (p) => {
   dispatchEvent(new PopStateEvent("popstate"));
 };
 const back = (role) => menus[role][0][1];
-function Auth({ register, onLogin }) {
+function ThemeToggle({ theme, onToggle }) {
+  return (
+    <button className="theme-toggle" onClick={onToggle} aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}>
+      <span aria-hidden="true">{theme === "dark" ? "☼" : "☾"}</span>
+      {theme === "dark" ? "Light mode" : "Dark mode"}
+    </button>
+  );
+}
+function Auth({ register, onLogin, theme, onToggleTheme }) {
   const [f, setF] = useState({
       name: "",
       email: "",
@@ -84,6 +92,7 @@ function Auth({ register, onLogin }) {
       .catch((e) => setError(e.error || "Unable to sign in"));
   return (
     <main className="login">
+      <ThemeToggle theme={theme} onToggle={onToggleTheme} />
       <div className="brand big">
         <span>✦</span> RouteFlow
       </div>
@@ -963,7 +972,16 @@ function Root() {
   const [user, setUser] = useState(null),
     [db, setDb] = useState(null),
     [ready, setReady] = useState(false),
-    [path, setPath] = useState(location.pathname);
+    [path, setPath] = useState(location.pathname),
+    [theme, setTheme] = useState(() => {
+      const saved = localStorage.getItem("routeflow-theme");
+      return saved || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    });
+  const toggleTheme = () => setTheme((current) => (current === "dark" ? "light" : "dark"));
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem("routeflow-theme", theme);
+  }, [theme]);
   useEffect(() => {
     const load = () => {
       if (user)
@@ -1026,6 +1044,7 @@ function Root() {
     );
   return path === "/" ? (
     <main className="login">
+      <ThemeToggle theme={theme} onToggle={toggleTheme} />
       <div className="brand big">
         <span>✦</span> RouteFlow
       </div>
@@ -1039,6 +1058,8 @@ function Root() {
   ) : (
     <Auth
       register={path === "/register"}
+      theme={theme}
+      onToggleTheme={toggleTheme}
       onLogin={(u) => {
         setUser(u);
         go(back(u.role));

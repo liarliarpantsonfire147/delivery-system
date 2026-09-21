@@ -7,3 +7,27 @@
 .map .pin,.map .route-line,.map .road{display:none}
 .shell .nav:nth-of-type(3),.shell .nav:nth-of-type(4),.shell .nav:nth-of-type(5){display:none}body[data-role="ADMIN"] .shell .nav:nth-of-type(3),body[data-role="ADMIN"] .shell .nav:nth-of-type(4),body[data-role="ADMIN"] .shell .nav:nth-of-type(5),body[data-role="DISPATCHER"] .shell .nav:nth-of-type(3),body[data-role="DISPATCHER"] .shell .nav:nth-of-type(4),body[data-role="DISPATCHER"] .shell .nav:nth-of-type(5){display:flex}
 .shell.role-ADMIN .nav,.shell.role-DISPATCHER .nav{display:flex}
+
+/* Auth atmosphere and theme overrides */
+html[data-theme="dark"] .login{--ink:#edf7f5;--muted:#9aadaa;--line:#2a4145;--bg:#101c20;--teal:#5bd0c0;--teal2:#173b3b;--orange:#ffad70;--blue:#86a9ff}
+.login{position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(circle at 12% 18%,#d8f6eb 0,transparent 31%),radial-gradient(circle at 88% 82%,#ffe5c9 0,transparent 32%),var(--bg);transition:background .6s ease,color .4s ease}
+.login::before,.login::after{content:"";position:absolute;z-index:-1;border-radius:50%;pointer-events:none;filter:blur(2px);animation:auth-drift 12s ease-in-out infinite alternate}
+.login::before{width:280px;height:280px;top:7%;left:-120px;background:#7bd8c555}
+.login::after{width:220px;height:220px;right:-70px;bottom:8%;background:#ffb36b55;animation-delay:-4s}
+html[data-theme="dark"] .login{background:radial-gradient(circle at 12% 18%,#173e3a 0,transparent 34%),radial-gradient(circle at 88% 82%,#493323 0,transparent 32%),var(--bg)}
+html[data-theme="dark"] .login-card{background:#17282c;box-shadow:0 20px 70px #0008}
+html[data-theme="dark"] .login-card input,html[data-theme="dark"] .login-card select{background:#102024;color:var(--ink);border-color:#345156}
+html[data-theme="dark"] .error{background:#482b31;color:#ffb2a9}
+.login>.brand,.login>.tag,.login>.login-card{animation:auth-rise .7s cubic-bezier(.2,.8,.2,1) both}
+.login>.tag{animation-delay:.08s}.login>.login-card{animation-delay:.16s}
+.login-card{transition:background .5s ease,border-color .5s ease,box-shadow .5s ease;box-shadow:0 20px 60px #19403a18}
+.login-card label{transition:transform .25s ease,color .25s ease}.login-card label:focus-within{color:var(--teal);transform:translateX(3px)}
+.login-card input,.login-card select{transition:border-color .25s ease,box-shadow .25s ease,background .4s ease,color .4s ease,transform .25s ease}
+.login-card input:focus,.login-card select:focus{outline:0;border-color:var(--teal);box-shadow:0 0 0 4px var(--teal2);transform:translateY(-1px)}
+.login-card .primary{transition:transform .25s ease,box-shadow .25s ease,filter .25s ease}.login-card .primary:hover{transform:translateY(-3px);box-shadow:0 12px 24px #1b8c8338;filter:saturate(1.15)}.login-card .primary:active{transform:translateY(-1px)}
+.auth-toggle{transition:color .2s ease,transform .2s ease}.auth-toggle:hover{transform:translateY(-2px)}
+.theme-toggle{position:absolute;top:24px;right:24px;display:flex;align-items:center;gap:7px;padding:8px 11px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:11px;background:#ffffff99;backdrop-filter:blur(10px);transition:color .25s ease,border-color .25s ease,background .25s ease,transform .25s ease}.theme-toggle span{font-size:16px;color:var(--orange);line-height:1}.theme-toggle:hover{color:var(--ink);transform:translateY(-2px);background:#fff}
+html[data-theme="dark"] .theme-toggle{background:#17282ccc}html[data-theme="dark"] .theme-toggle:hover{background:#20373b}
+@keyframes auth-rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}@keyframes auth-drift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(22px,-18px,0) scale(1.08)}}
+@media(max-width:600px){.theme-toggle{top:14px;right:14px}.login{padding-top:34px}}
+@media(prefers-reduced-motion:reduce){.login::before,.login::after,.login>.brand,.login>.tag,.login>.login-card{animation:none}.login-card,.login-card input,.login-card select,.login-card .primary,.auth-toggle,.theme-toggle{transition:none}}
