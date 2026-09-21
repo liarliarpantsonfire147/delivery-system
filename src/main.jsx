@@ -72,6 +72,90 @@ function ThemeToggle({ theme, onToggle }) {
     </button>
   );
 }
+function Landing({ theme, onToggleTheme }) {
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        }),
+      { threshold: 0.14 },
+    );
+    document.querySelectorAll(".landing-reveal").forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, []);
+  return (
+    <main className="landing-page">
+      <nav className="landing-nav">
+        <button className="brand landing-brand" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+          <span>✦</span> RouteFlow
+        </button>
+        <div className="landing-nav-links">
+          <a href="#workflow">How it works</a>
+          <a href="#roles">For teams</a>
+          <a href="#proof">Why RouteFlow</a>
+        </div>
+        <div className="landing-actions">
+          <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+          <button className="link landing-signin" onClick={() => go("/login")}>Sign in</button>
+          <button className="primary landing-nav-cta" onClick={() => go("/register")}>Get started</button>
+        </div>
+      </nav>
+
+      <section className="landing-hero">
+        <div className="landing-hero-copy landing-reveal">
+          <span className="eyebrow">DELIVERY OPERATIONS, IN ONE FLOW</span>
+          <h1>Move every delivery <em>with intention.</em></h1>
+          <p>RouteFlow gives customers, riders, and businesses one calm, connected view of what is moving and what happens next.</p>
+          <div className="landing-hero-actions">
+            <button className="primary landing-hero-cta" onClick={() => go("/register")}>Start moving smarter <span>↗</span></button>
+            <a className="landing-text-link" href="#workflow">See how it works <span>↓</span></a>
+          </div>
+          <div className="landing-trust-line"><span className="trust-dot">●</span> Built for the real rhythm of delivery work</div>
+        </div>
+        <div className="landing-hero-visual landing-reveal landing-reveal-delay">
+          <div className="orbit orbit-one" /><div className="orbit orbit-two" />
+          <div className="preview-window">
+            <div className="preview-topbar"><span className="preview-dots">● ● ●</span><span>RouteFlow / live workspace</span><span className="preview-live">● LIVE</span></div>
+            <div className="preview-body">
+              <div className="preview-sidebar"><b>✦</b><span className="preview-active">▦</span><span>◫</span><span>⌁</span><span>◎</span></div>
+              <div className="preview-main">
+                <div className="preview-heading"><div><small>BUSINESS DASHBOARD</small><h3>Operations overview</h3></div><span className="preview-date">Today · Abuja</span></div>
+                <div className="preview-stats"><div><small>ACTIVE DELIVERIES</small><strong>24</strong><i>+18.4%</i></div><div><small>ON-TIME RATE</small><strong>96.8%</strong><i>+4.2%</i></div><div><small>AVAILABLE RIDERS</small><strong>18</strong><i>Ready now</i></div></div>
+                <div className="preview-map"><span className="map-line map-line-one" /><span className="map-line map-line-two" /><b className="map-pin pin-one">●</b><b className="map-pin pin-two">◆</b><b className="map-pin pin-three">✦</b><div className="map-callout"><span>●</span><div><b>Order #RF-2048</b><small>Rider approaching pickup</small></div><strong>12 min</strong></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="landing-proof landing-reveal" id="proof">
+        <div className="proof-intro"><span className="eyebrow">THE ROUTEFLOW DIFFERENCE</span><h2>Less chasing.<br /><em>More delivering.</em></h2></div>
+        <div className="proof-metrics"><div><strong>3</strong><span>connected roles</span></div><div><strong>1</strong><span>shared live view</span></div><div><strong>24/7</strong><span>delivery visibility</span></div></div>
+      </section>
+
+      <section className="landing-workflow" id="workflow">
+        <div className="landing-section-heading landing-reveal"><span className="eyebrow">A CLEARER WAY TO MOVE</span><h2>Every handoff,<br /><em>right where you need it.</em></h2><p>From the first request to the final doorstep, RouteFlow keeps the next action visible and the whole team in sync.</p></div>
+        <div className="workflow-grid">
+          <article className="workflow-card landing-reveal"><span className="workflow-number">01</span><div className="workflow-icon">⌁</div><h3>Request with clarity</h3><p>Customers and businesses create complete delivery requests without the back-and-forth.</p><a href="#roles">Explore the flow <span>↗</span></a></article>
+          <article className="workflow-card workflow-card-feature landing-reveal landing-reveal-delay"><span className="workflow-number">02</span><div className="workflow-icon">✦</div><h3>Dispatch in motion</h3><p>Riders see the right orders, accept with confidence, and keep every status current.</p><a href="#roles">See the roles <span>↗</span></a></article>
+          <article className="workflow-card landing-reveal landing-reveal-delay-two"><span className="workflow-number">03</span><div className="workflow-icon">↗</div><h3>Deliver with confidence</h3><p>Everyone gets a reliable view of progress, timing, and what has already been done.</p><a href="#proof">See the difference <span>↗</span></a></article>
+        </div>
+      </section>
+
+      <section className="landing-roles" id="roles">
+        <div className="landing-roles-copy landing-reveal"><span className="eyebrow">ONE PLATFORM, THREE PERSPECTIVES</span><h2>Designed for the people who keep things moving.</h2><p>Every role gets the information and control they need, without adding another layer of logistics overhead.</p><button className="primary" onClick={() => go("/register")}>Choose your starting point <span>↗</span></button></div>
+        <div className="role-list landing-reveal landing-reveal-delay"><div className="role-item"><span className="role-icon role-customer">◌</span><div><h3>Customers</h3><p>Request a delivery, follow its progress, and know when it arrives.</p></div><span>↗</span></div><div className="role-item"><span className="role-icon role-rider">✦</span><div><h3>Riders</h3><p>Find available work, navigate the next handoff, and stay in control.</p></div><span>↗</span></div><div className="role-item"><span className="role-icon role-business">▦</span><div><h3>Businesses</h3><p>Coordinate the operation with visibility across every active order.</p></div><span>↗</span></div></div>
+      </section>
+
+      <section className="landing-quote landing-reveal"><span className="quote-mark">“</span><blockquote>Good delivery operations should feel less like a scramble and more like a shared rhythm.</blockquote><span className="quote-caption">The idea behind RouteFlow</span></section>
+      <footer className="landing-footer"><div className="brand"><span>✦</span> RouteFlow</div><span>Delivery, in a better direction.</span><button className="link" onClick={() => go("/register")}>Create your account ↗</button></footer>
+    </main>
+  );
+}
 function Auth({ register, onLogin, theme, onToggleTheme }) {
   const [f, setF] = useState({
       name: "",
@@ -1043,18 +1127,7 @@ function Root() {
       </SafeApp>
     );
   return path === "/" ? (
-    <main className="login">
-      <ThemeToggle theme={theme} onToggle={toggleTheme} />
-      <div className="brand big">
-        <span>✦</span> RouteFlow
-      </div>
-      <button className="primary" onClick={() => go("/login")}>
-        Sign in
-      </button>
-      <button className="link" onClick={() => go("/register")}>
-        Create account
-      </button>
-    </main>
+    <Landing theme={theme} onToggleTheme={toggleTheme} />
   ) : (
     <Auth
       register={path === "/register"}
